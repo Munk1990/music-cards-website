@@ -7,6 +7,9 @@
 // FULL DOCUMENTATION: https://pdf-lib.js.org/
 const {PDFDocument, StandardFonts, rgb} = PDFLib;
 async function goPDF() {
+    document.getElementById("generatePDF").innerText="Processing PDF"
+    document.getElementById("generatePDF").disabled = true
+
     cardFronts = document.getElementsByClassName("cardfront");
     cardBacks = document.getElementsByClassName("cardback");
 
@@ -37,9 +40,17 @@ async function goPDF() {
 
         }
     }
+    const pdfBytes = await pdfDoc.save()
+    document.getElementById("generatePDF").innerText="Generate PDF"
+    document.getElementById("generatePDF").disabled = true
+    let pdfName = ""
+    if (document.getElementById("listTitle").value) {
+        pdfName = "music-cards-1x" + document.getElementById("albumCounter").text + "-(" + document.getElementById("listTitle").value + ").pdf"
+    } else {
+        pdfName = "music-cards-1x" + document.getElementById("albumCounter").text + ".pdf"
 
-      const pdfBytes = await pdfDoc.save()
-      download(pdfBytes, "hello-world.pdf", "application/pdf");
+    }
+    download(pdfBytes, pdfName, "application/pdf");
 }
 </script>
     <script>
@@ -102,17 +113,16 @@ async function goPDF() {
         
         function loadAlbumsFromUrlHash() {
             let urlHash = window.location.hash.substr(1);
-            console.log("urlhash " + urlHash)
             let providersAndAlbums = urlHash.split("&")
             providersAndAlbums.forEach(function(providerAndAlbums) {
                 let provider = providerAndAlbums.split("=")[0]
                 let albums = providerAndAlbums.split("=")[1]
-                console.log("processing:" + provider + " Val:" + albums)
                 if (provider in SUPPORTED_SERVICES) {
                     if (albums) {
                         let albumList = albums.split(",")
                         AlbumList[provider] = albumList
                         albumList.forEach(function (album) {
+                            document.getElementById("albumCounter").text = parseInt(document.getElementById("albumCounter").text) + 1
                             const cardRow = albumInputRowHtml(document.getElementById("cardsTableBody"))
                             cardRow.querySelector('td .providerSelect').value = provider
                             cardRow.querySelector('td .album_id').text = album
@@ -120,21 +130,16 @@ async function goPDF() {
                         })
                     }
                 } else {
-                    console.log("Populating non album vals")
 
                     if (provider == "listTitle") {
-                        console.log("Will work")
-                        document.getElementById("listTitle").value = albums
+                        document.getElementById("listTitle").value = decodeURIComponent(albums)
                     }
                     if (provider == "cardWidth") {
-                        console.log("Will work")
                         document.getElementById("cardWidth").value = albums
                     }
                     if (provider == "cardHeight") {
-                        console.log("Will work")
                         document.getElementById("cardHeight").value = albums
                     }
-                    console.log("Found no match for :" + provider)
                 }
             })
         }
@@ -147,26 +152,34 @@ async function goPDF() {
             providerAlbums.push("listTitle=" + document.getElementById("listTitle").value)
             providerAlbums.push("cardWidth=" + document.getElementById("cardWidth").value)
             providerAlbums.push("cardHeight=" + document.getElementById("cardHeight").value)
+            let albumCount = 0
             for (const [provider, values] of Object.entries(AlbumList)) {
                 if (values.length > 0) {
+                    albumCount = albumCount + values.length
                     providerAlbums.push(provider + "=" + values.join(","))
                 }
             }
             window.location.hash = providerAlbums.join("&")
+            document.getElementById("albumCounter").text = albumCount
+            if (document.getElementById("listTitle").value) {
+                document.title = document.getElementById("listTitle").value + "-Music Cards"
+            } else {
+                document.title = "Music Cards"
+            }
+
+            populateCover();
         }
 
         function populateCover(){
             let titleField = encodeURIComponent("Music Cards")
-            console.log(titleField)
             if (document.getElementById("listTitle").value) {
                 titleField = encodeURIComponent(document.getElementById("listTitle").value)
-                console.log(titleField)
             }
             const cardWidth = document.getElementById("cardWidth")
             const cardHeight = document.getElementById("cardHeight")
             const listUrl =  encodeURIComponent(document.location.href);
-            const qr_title = encodeURIComponent("Scan this for stack's link")
-            const qr_subtitle = ""
+            const qr_title = titleField
+            const qr_subtitle = "Album count : " + document.getElementById("albumCounter").text
             const frontCover = document.getElementById("frontCover")
             const backCover = document.getElementById("backCover")
             query_url = MUSIC_CARDS_ENDPOINT + COVER_API + "?title=" + titleField
@@ -175,6 +188,7 @@ async function goPDF() {
                 + "&cardwidth=" + cardWidth.value
                 + "&cardheight=" + cardHeight.value;
             console.log(query_url)
+            document.getElementById("coverCards").innerHTML = "Processing Cover cards.."
             httpGetAsync(query_url, function(api_result){
                 if (api_result.status == 200 && api_result.responseText !== "") {
                     console.log(api_result.responseText)
@@ -182,15 +196,14 @@ async function goPDF() {
                     const resultId = result_json.id;
                     frontCover.src = result_json.s3_url_front
                     backCover.src = result_json.s3_url_back
-
-                    recalculateHash()
-
+                    document.getElementById("coverCards").innerHTML = "Cover cards"
                 } else if (api_result.status == 504) {
                     console.log("Response timed out. Retrying in 5s");
+                    document.getElementById("coverCards").innerHTML = "Response timed out. Retrying in 5s"
                     setTimeout(() => {
                         console.log("World!");
+                        document.getElementById("coverCards").innerHTML = "<button onclick='populateCover()'>Generate Covers</button>"
                     }, 5000);
-                    populateCover()
                 } else {
                     console.log("Error in response");
 
@@ -208,6 +221,7 @@ async function goPDF() {
             const providerSelect = cardRow.querySelector('td .providerSelect')
             const providers = cardRow.querySelector('td .providers')
             const albumIdLabel = cardRow.querySelector('td .album_id')
+            const deleteRowCell = cardRow.querySelector('.delete_row')
             let query_url = "";
             if (albumIdLabel.text !== "") {
                 const albumId = albumIdLabel.text;
@@ -230,7 +244,6 @@ async function goPDF() {
                 let providerEntry;
                 let providerEntryText;
                 if (api_result.status == 200 && api_result.responseText !== "") {
-                    console.log(api_result.responseText)
                     result_json = JSON.parse(api_result.responseText)
                     const resultId = result_json.id;
                     const provider = resultId.split(".")[0]
@@ -256,16 +269,15 @@ async function goPDF() {
                         recalculateHash()
                     }
                 } else if (api_result.status == 504) {
-                    console.log("Response timed out. Retrying in 5s");
+                    providers.innerHTML = "Timed Out (as usual). Retry after 5s";
                     setTimeout(() => {
-                        console.log("World!");
-                        // albumIdLabel.innerHTML = "Retrying...";
+                        providers.innerHTML = "<button type='button' onclick=\"populateRowForCard(this.parentElement.parentElement.parentElement);\">Retry</button>"
                     }, 5000);
-                    populateRowForCard(cardRow)
                 } else {
-                    console.log("Error in response");
+                    providers.innerHTML = "Error in response"
 
                 }
+                deleteRowCell.disabled = false
 
             });
             providers.innerHTML = "Processing...";
@@ -287,7 +299,7 @@ async function goPDF() {
             var albumrow = tableBody.insertRow(0)
 
             var inputCell = document.createElement('td')
-            inputCell.innerHTML = "<input type=\"text\" placeholder=\"Enter Album URL or ID\" class=\"url_input\" name=\"url_input\" size=60 oninput=\"populateRowForCard(this.parentElement.parentElement)\">"
+            inputCell.innerHTML = "<input type=\"text\" placeholder=\"Enter Album URL\" class=\"url_input\" name=\"url_input\" size=60 oninput=\"populateRowForCard(this.parentElement.parentElement)\">"
             albumrow.appendChild(inputCell)
 
             var cardFrontCell =  document.createElement('td')
@@ -308,19 +320,39 @@ async function goPDF() {
             albumrow.appendChild(selectProviderCell)
 
             var providersLitCell =  document.createElement('td')
-            providersLitCell.innerHTML = "<div class=\"providers\"></div>"
+            providersLitCell.innerHTML = "<div class=\"providers\"><button type='button' onclick=\"populateRowForCard(this.parentElement.parentElement.parentElement);\">Generate</button></div>"
             albumrow.appendChild(providersLitCell)
 
             var albumIdCell =  document.createElement('td')
             albumIdCell.innerHTML = "<a class=\"album_id\"></a>"
             albumrow.appendChild(albumIdCell)
 
+            var deleteRowCell = document.createElement('button')
+            deleteRowCell.className = "delete_row"
+            deleteRowCell.textContent = "Delete Card"
+            deleteRowCell.onclick = function() {
+                provider = selectElement.value
+                albumId = albumIdCell.querySelector(".album_id").text
+                this.parentElement.parentElement.removeChild(this.parentElement);
+                if (AlbumList[provider].includes(albumId)) {
+                        const albumList = AlbumList[provider]
+                        const newList = albumList.filter(function(value, index, arr){
+                            return value !== albumId
+                        })
+                        AlbumList[provider] = newList
+                        recalculateHash()
+                    }
+                recalculateHash();
+            }
+            deleteRowCell.disabled = true
+            albumrow.appendChild(deleteRowCell)
+
             return albumrow
         }
 
     </script>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Music Cards</title>
 </head>
 <body>
 Accepts links from following formats:</br>
@@ -345,18 +377,16 @@ Accepts links from following formats:</br>
 
 <table>
     <tbody id="coverPage">
-    <tr><td><input type="text" placeholder="Enter Album List Title" id="listTitle" oninput="recalculateHash()"></td></tr>
+    <tr><td><input type="text" placeholder="Enter Album List Title" id="listTitle" onfocusout="recalculateHash()"></td></tr>
     <tr>
-        <td>Width (in mm)<input type="number" id="cardWidth" value="64"></td>
-        <td>Height (in mm)<input type="number" id="cardHeight" value="89"></td>
+        <td>Card Width (in mm)<input type="number" id="cardWidth" value="71"></td>
+        <td>Card Height (in mm)<input type="number" id="cardHeight" value="100"></td>
     </tr>
 
-    <tr><td><a>Album Count:</a><a id="albumCounter"></a></td></tr>
-    <tr><td><input type="checkbox" id="printCoverCheck" onchange="populateCover();"></td></tr>
-    <tr>
-        <td><img id="frontCover" class="cardfront" style="max-width: 200px"></td>
-        <td><img id="backCover" class="cardback" style="max-width: 200px"></td>
-    </tr>
+    <tr><td><a>Album Count:</a><a id="albumCounter">0</a></td></tr>
+    <tr><td><button type="checkbox" id="printCover"
+                    onclick="recalculateHash();window.location.reload(true);">Refresh</button>
+    </td></tr>
 
     </tbody>
 </table>
@@ -365,11 +395,19 @@ Accepts links from following formats:</br>
 <tbody id="cardsTableBody">
 </tbody>
 </table>
+<table><tbody>
+    <tr>
+        <td><div id="coverCards">Cover Cards</div></td>
+        <td><img id="frontCover" class="cardfront" style="max-width: 200px"></td>
+        <td><img id="backCover" class="cardback" style="max-width: 200px"></td>
+    </tr>
+</tbody></table>
 <script>
     loadAlbumsFromUrlHash();
     albumInputRowHtml(document.getElementById("cardsTableBody"));
+    populateCover()
 </script>
 
-<button onclick="goPDF()">Create Music Cards PDF</button>
+<button id="generatePDF" onclick="goPDF()">Create Music Cards PDF</button>
 </body>
 </html>
