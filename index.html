@@ -42,12 +42,14 @@ async function goPDF() {
     }
     const pdfBytes = await pdfDoc.save()
     document.getElementById("generatePDF").innerText="Generate PDF"
-    document.getElementById("generatePDF").disabled = true
+    document.getElementById("generatePDF").disabled = false
     let pdfName = ""
     if (document.getElementById("listTitle").value) {
-        pdfName = "music-cards-1x" + document.getElementById("albumCounter").text + "-(" + document.getElementById("listTitle").value + ").pdf"
+        pdfName = "music-cards-1x" + document.getElementById("albumCounter").text+"-" +document.getElementById("cardWidth").value + "x" + document.getElementById("cardHeight").value + "mm"
+         +  "-(" + document.getElementById("listTitle").value + ").pdf"
     } else {
-        pdfName = "music-cards-1x" + document.getElementById("albumCounter").text + ".pdf"
+        pdfName = "music-cards-1x" + document.getElementById("albumCounter").text+"-" +document.getElementById("cardWidth").value + "x" + document.getElementById("cardHeight").value + "mm"
+        +  ".pdf"
 
     }
     download(pdfBytes, pdfName, "application/pdf");
@@ -179,7 +181,7 @@ async function goPDF() {
             const cardHeight = document.getElementById("cardHeight")
             const listUrl =  encodeURIComponent(document.location.href);
             const qr_title = titleField
-            const qr_subtitle = "Album count : " + document.getElementById("albumCounter").text
+            const qr_subtitle = document.getElementById("albumCounter").text + " Albums"
             const frontCover = document.getElementById("frontCover")
             const backCover = document.getElementById("backCover")
             query_url = MUSIC_CARDS_ENDPOINT + COVER_API + "?title=" + titleField
