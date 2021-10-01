@@ -3,6 +3,7 @@
 <head>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.9.0/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/downloadjs/1.4.8/download.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Yellowtail" />
 <script>
 // FULL DOCUMENTATION: https://pdf-lib.js.org/
 const {PDFDocument, StandardFonts, rgb} = PDFLib;
@@ -190,7 +191,7 @@ async function goPDF() {
                 + "&cardwidth=" + cardWidth.value
                 + "&cardheight=" + cardHeight.value;
             console.log(query_url)
-            document.getElementById("coverCards").innerHTML = "Processing Cover cards.."
+            document.getElementById("coverCards").innerHTML = "<em>Refreshing Cover card...</em>"
             httpGetAsync(query_url, function(api_result){
                 if (api_result.status == 200 && api_result.responseText !== "") {
                     console.log(api_result.responseText)
@@ -198,7 +199,7 @@ async function goPDF() {
                     const resultId = result_json.id;
                     frontCover.src = result_json.s3_url_front
                     backCover.src = result_json.s3_url_back
-                    document.getElementById("coverCards").innerHTML = "Cover cards"
+                    document.getElementById("coverCards").innerHTML = ""
                 } else if (api_result.status == 504) {
                     console.log("Response timed out. Retrying in 5s");
                     document.getElementById("coverCards").innerHTML = "Response timed out. Retrying in 5s"
@@ -357,59 +358,109 @@ async function goPDF() {
     <title>Music Cards</title>
 </head>
 <body>
-Accepts links from following formats:</br>
-- spotify</br>
-- itunes</br>
-- appleMusic</br>
-- youtube</br>
-- youtubeMusic</br>
-- google</br>
-- googleStore</br>
-- pandora</br>
-- deezer</br>
-- tidal</br>
-- amazonStore</br>
-- amazonMusic</br>
-- soundcloud</br>
-- napster</br>
-- yandex</br>
-- spinrilla</br>
-- audius</br>
-</br>
+<div id="header">
+    <center>
+        <a style="font-family:Yellowtail;font-size:36px">Music Cards</a>
+        </br></br>
+        <a style="font-size:16px" >An open source Music experiment. Open source, because sharing is caring :) </a>
+    </center>
+</div>
+<center>
+    <br>
+    <input
+            type="text"
+            style="font-family:Yellowtail;font-size:26px;width:13em;text-align:center;"
+            placeholder="Enter Album Deck Title"
+            align="center"
+            id="listTitle"
 
-<table>
-    <tbody id="coverPage">
-    <tr><td><input type="text" placeholder="Enter Album List Title" id="listTitle" onfocusout="recalculateHash()"></td></tr>
-    <tr>
-        <td>Card Width (in mm)<input type="number" id="cardWidth" value="71"></td>
-        <td>Card Height (in mm)<input type="number" id="cardHeight" value="100"></td>
-    </tr>
+            onfocusout="recalculateHash()"
+    >
+    <br><br>
+    <table>
+        <tbody>
+        <tr>
+            <td>Card Width (in mm)</td><td><input type="number" id="cardWidth" value="71"></td>
+        </tr>
+        <tr>
+            <td>Card Height (in mm)</td><td><input type="number" id="cardHeight" value="100"></td>
+        </tr>
+        <tr>
+            <td><button type="checkbox" id="printCover"
+                        onclick="recalculateHash();window.location.reload(true);">Refresh</button></td>
 
-    <tr><td><a>Album Count:</a><a id="albumCounter">0</a></td></tr>
-    <tr><td><button type="checkbox" id="printCover"
-                    onclick="recalculateHash();window.location.reload(true);">Refresh</button>
-    </td></tr>
+        </tr>
+        </tbody>
+    </table>
+    <a>Album Count : </a><a id="albumCounter" style="font-weight: bold;">0</a><br><br>
 
+    <table style="border-collapse: collapse;" border="1">
+    <tbody id="cardsTableBody">
     </tbody>
-</table>
+    </table>
+    <table><tbody>
+        <tr>
+            <td><div id="coverCards">Cover Cards</div></td>
+            <td><img id="frontCover" class="cardfront" style="max-width: 200px"></td>
+            <td><img id="backCover" class="cardback" style="max-width: 200px"></td>
+        </tr>
+    </tbody></table>
+    <script>
+        loadAlbumsFromUrlHash();
+        albumInputRowHtml(document.getElementById("cardsTableBody"));
+        populateCover()
+    </script>
 
-<table style="border-collapse: collapse;" border="1">
-<tbody id="cardsTableBody">
-</tbody>
-</table>
-<table><tbody>
-    <tr>
-        <td><div id="coverCards">Cover Cards</div></td>
-        <td><img id="frontCover" class="cardfront" style="max-width: 200px"></td>
-        <td><img id="backCover" class="cardback" style="max-width: 200px"></td>
-    </tr>
-</tbody></table>
-<script>
-    loadAlbumsFromUrlHash();
-    albumInputRowHtml(document.getElementById("cardsTableBody"));
-    populateCover()
-</script>
+    <button id="generatePDF" onclick="goPDF()">Create Music Cards PDF</button>
 
-<button id="generatePDF" onclick="goPDF()">Create Music Cards PDF</button>
+<br><br><br>
+<div id="footernotes">
+    <table><tbody>
+    <hr style="border-top: 1px solid #f0f0f5;" width="40%">
+        <tr><td>Accepts album URLs from following services:</td></tr>
+        <tr><td><div style="margin-left:15em;">
+            - spotify</br>
+            - itunes</br>
+            - appleMusic</br>
+            - youtube</br>
+            - youtubeMusic</br>
+            - google</br>
+            - googleStore</br>
+            - pandora</br>
+            - deezer</br>
+            - tidal</br>
+            - amazonStore</br>
+            - amazonMusic</br>
+            - soundcloud</br>
+            - napster</br>
+            - yandex</br>
+            - spinrilla</br>
+            - audius</br>
+        </div></td>
+        </tr>
+    </tbody></table>
+    <table>
+        <tbody>
+        <tr>
+            <td>
+                Frontend:
+            </td>
+            <td>
+                <a href="https://github.com/Munk1990/music-cards-website">Github/music-cards-website</a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Backend :
+            </td>
+            <td>
+                <a href="https://github.com/Munk1990/music-cards-lambda">Github/music-cards-lambda</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</center>
+
 </body>
 </html>
