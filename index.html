@@ -1,111 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.9.0/pdf-lib.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/downloadjs/1.4.8/download.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Yellowtail" />
-<script>
-// FULL DOCUMENTATION: https://pdf-lib.js.org/
-const {PDFDocument, StandardFonts, rgb} = PDFLib;
-async function goPDF() {
-    document.getElementById("generatePDF").innerText="Processing PDF"
-    document.getElementById("generatePDF").disabled = true
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.9.0/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/downloadjs/1.4.8/download.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Yellowtail"/>
+    <script>
+        // FULL DOCUMENTATION: https://pdf-lib.js.org/
+        const {PDFDocument, StandardFonts, rgb} = PDFLib;
 
-    cardFronts = document.getElementsByClassName("cardfront");
-    cardBacks = document.getElementsByClassName("cardback");
+        async function goPDF() {
+            document.getElementById("generatePDF").innerText = "Processing PDF"
+            document.getElementById("generatePDF").disabled = true
 
-    const pdfDoc = await PDFDocument.create()
+            cardFronts = document.getElementsByClassName("cardfront");
+            cardBacks = document.getElementsByClassName("cardback");
 
-    for (let i = 0; i < cardFronts.length; i++) {
-        frontImageSrc = cardFronts[i].src
-        backImageSrc = cardBacks[i].src
-        if (frontImageSrc) {
-            const frontImageBytes = await fetch(frontImageSrc).then((res) => res.arrayBuffer())
-            const frontImage = await pdfDoc.embedJpg(frontImageBytes)
-            const frontDims = frontImage.scale(1);
-            const frontPage = pdfDoc.addPage();
-            frontPage.setSize(frontDims.width,frontDims.height);
-            frontPage.drawImage(frontImage, {
-                x: 0,
-                y: 0,
-            })
-            const backImageBytes = await fetch(backImageSrc).then((res) => res.arrayBuffer())
-            const backImage = await pdfDoc.embedJpg(backImageBytes)
-            const backDims = backImage.scale(1);
-            const backPage = pdfDoc.addPage();
-            backPage.setSize(backDims.width,backDims.height);
-            backPage.drawImage(backImage, {
-                x: 0,
-                y: 0,
-            })
+            const pdfDoc = await PDFDocument.create()
 
+            for (let i = 0; i < cardFronts.length; i++) {
+                frontImageSrc = cardFronts[i].src
+                backImageSrc = cardBacks[i].src
+                if (frontImageSrc) {
+                    const frontImageBytes = await fetch(frontImageSrc).then((res) => res.arrayBuffer())
+                    const frontImage = await pdfDoc.embedJpg(frontImageBytes)
+                    const frontDims = frontImage.scale(1);
+                    const frontPage = pdfDoc.addPage();
+                    frontPage.setSize(frontDims.width, frontDims.height);
+                    frontPage.drawImage(frontImage, {
+                        x: 0,
+                        y: 0,
+                    })
+                    const backImageBytes = await fetch(backImageSrc).then((res) => res.arrayBuffer())
+                    const backImage = await pdfDoc.embedJpg(backImageBytes)
+                    const backDims = backImage.scale(1);
+                    const backPage = pdfDoc.addPage();
+                    backPage.setSize(backDims.width, backDims.height);
+                    backPage.drawImage(backImage, {
+                        x: 0,
+                        y: 0,
+                    })
+
+                }
+            }
+            const pdfBytes = await pdfDoc.save()
+            document.getElementById("generatePDF").innerText = "Generate PDF"
+            document.getElementById("generatePDF").disabled = false
+            let pdfName = ""
+            if (document.getElementById("listTitle").value) {
+                pdfName = "music-cards-1x" + document.getElementById("albumCounter").text + "-" + document.getElementById("cardWidth").value + "x" + document.getElementById("cardHeight").value + "mm"
+                    + "-(" + document.getElementById("listTitle").value + ").pdf"
+            } else {
+                pdfName = "music-cards-1x" + document.getElementById("albumCounter").text + "-" + document.getElementById("cardWidth").value + "x" + document.getElementById("cardHeight").value + "mm"
+                    + ".pdf"
+
+            }
+            download(pdfBytes, pdfName, "application/pdf");
         }
-    }
-    const pdfBytes = await pdfDoc.save()
-    document.getElementById("generatePDF").innerText="Generate PDF"
-    document.getElementById("generatePDF").disabled = false
-    let pdfName = ""
-    if (document.getElementById("listTitle").value) {
-        pdfName = "music-cards-1x" + document.getElementById("albumCounter").text+"-" +document.getElementById("cardWidth").value + "x" + document.getElementById("cardHeight").value + "mm"
-         +  "-(" + document.getElementById("listTitle").value + ").pdf"
-    } else {
-        pdfName = "music-cards-1x" + document.getElementById("albumCounter").text+"-" +document.getElementById("cardWidth").value + "x" + document.getElementById("cardHeight").value + "mm"
-        +  ".pdf"
-
-    }
-    download(pdfBytes, pdfName, "application/pdf");
-}
-</script>
+    </script>
     <script>
         const MUSIC_CARDS_ENDPOINT = "https://27p0a2mbdd.execute-api.us-east-1.amazonaws.com/Prod/";
         const CARD_API = "card";
         const COVER_API = "front"
 
         const SUPPORTED_SERVICES = {
-            spotify:"Spotify",
-            itunes:"Itunes",
-            appleMusic:"Apple Music",
-            youtube:"Youtube",
-            youtubeMusic:"Youtube Music",
-            google:"Google",
-            googleStore:"Google Store",
-            pandora:"Pandora",
-            deezer:"Deezer",
-            tidal:"Tidal",
-            amazonStore:"Amazon Store",
-            amazonMusic:"Amazon Music",
-            soundcloud:"Soundcloud",
-            napster:"Napster",
-            yandex:"Yandex",
-            spinrilla:"Spinrilla",
-            audius:"Audius"
+            spotify: "Spotify",
+            itunes: "Itunes",
+            appleMusic: "Apple Music",
+            youtube: "Youtube",
+            youtubeMusic: "Youtube Music",
+            google: "Google",
+            googleStore: "Google Store",
+            pandora: "Pandora",
+            deezer: "Deezer",
+            tidal: "Tidal",
+            amazonStore: "Amazon Store",
+            amazonMusic: "Amazon Music",
+            soundcloud: "Soundcloud",
+            napster: "Napster",
+            yandex: "Yandex",
+            spinrilla: "Spinrilla",
+            audius: "Audius"
         }
 
 
-        let AlbumList= {
-            spotify:[],
-            itunes:[],
-            appleMusic:[],
-            youtube:[],
-            youtubeMusic:[],
-            google:[],
-            googleStore:[],
-            pandora:[],
-            deezer:[],
-            tidal:[],
-            amazonStore:[],
-            amazonMusic:[],
-            soundcloud:[],
-            napster:[],
-            yandex:[],
-            spinrilla:[],
-            audius:[]
+        let AlbumList = {
+            spotify: [],
+            itunes: [],
+            appleMusic: [],
+            youtube: [],
+            youtubeMusic: [],
+            google: [],
+            googleStore: [],
+            pandora: [],
+            deezer: [],
+            tidal: [],
+            amazonStore: [],
+            amazonMusic: [],
+            soundcloud: [],
+            napster: [],
+            yandex: [],
+            spinrilla: [],
+            audius: []
         }
 
-        function httpGetAsync(theUrl, callback)
-        {
+        function httpGetAsync(theUrl, callback) {
             var xmlHttp = new XMLHttpRequest();
-            xmlHttp.onreadystatechange = function() {
+            xmlHttp.onreadystatechange = function () {
                 // if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
                 //     callback(xmlHttp.responseText);
                 callback(xmlHttp)
@@ -113,11 +113,11 @@ async function goPDF() {
             xmlHttp.open("GET", theUrl, true); // true for asynchronous
             xmlHttp.send(null);
         }
-        
+
         function loadAlbumsFromUrlHash() {
             let urlHash = window.location.hash.substr(1);
             let providersAndAlbums = urlHash.split("&")
-            providersAndAlbums.forEach(function(providerAndAlbums) {
+            providersAndAlbums.forEach(function (providerAndAlbums) {
                 let provider = providerAndAlbums.split("=")[0]
                 let albums = providerAndAlbums.split("=")[1]
                 if (provider in SUPPORTED_SERVICES) {
@@ -173,26 +173,26 @@ async function goPDF() {
             populateCover();
         }
 
-        function populateCover(){
+        function populateCover() {
             let titleField = encodeURIComponent("Music Cards")
             if (document.getElementById("listTitle").value) {
                 titleField = encodeURIComponent(document.getElementById("listTitle").value)
             }
             const cardWidth = document.getElementById("cardWidth")
             const cardHeight = document.getElementById("cardHeight")
-            const listUrl =  encodeURIComponent(document.location.href);
+            const listUrl = encodeURIComponent(document.location.href);
             const qr_title = titleField
             const qr_subtitle = document.getElementById("albumCounter").text + " Albums"
             const frontCover = document.getElementById("frontCover")
             const backCover = document.getElementById("backCover")
             query_url = MUSIC_CARDS_ENDPOINT + COVER_API + "?title=" + titleField
-                + "&url=" + listUrl+ "&qr_title=" + qr_title
+                + "&url=" + listUrl + "&qr_title=" + qr_title
                 + "&qr_subtitle=" + qr_subtitle
                 + "&cardwidth=" + cardWidth.value
                 + "&cardheight=" + cardHeight.value;
             console.log(query_url)
             document.getElementById("coverCards").innerHTML = "<em>Refreshing Cover card...</em>"
-            httpGetAsync(query_url, function(api_result){
+            httpGetAsync(query_url, function (api_result) {
                 if (api_result.status == 200 && api_result.responseText !== "") {
                     console.log(api_result.responseText)
                     result_json = JSON.parse(api_result.responseText)
@@ -214,7 +214,8 @@ async function goPDF() {
 
             });
         }
-        function populateRowForCard(cardRow){
+
+        function populateRowForCard(cardRow) {
             if (document.getElementsByClassName("url_input")[0].value !== "") {
                 albumInputRowHtml(document.getElementById("cardsTableBody"))
             }
@@ -228,7 +229,7 @@ async function goPDF() {
             let query_url = "";
             if (albumIdLabel.text !== "") {
                 const albumId = albumIdLabel.text;
-                const selectedProvider =  providerSelect.value
+                const selectedProvider = providerSelect.value
                 query_url = MUSIC_CARDS_ENDPOINT + CARD_API + "?provider=" + selectedProvider
                     + "&albumId=" + albumId + "&cardwidth=" + document.getElementById("cardWidth").value
                     + "&cardheight=" + document.getElementById("cardHeight").value;
@@ -241,7 +242,7 @@ async function goPDF() {
                 console.log(query_url)
             }
             // albumIdLabel.text = "Starting";
-            httpGetAsync(query_url, function(api_result){
+            httpGetAsync(query_url, function (api_result) {
                 let result_json;
                 let linksByPlatform;
                 let providerEntry;
@@ -286,65 +287,68 @@ async function goPDF() {
             providers.innerHTML = "Processing...";
         }
 
-        function populateProviderOptions(selectElement){
-            for (const [key, value] of Object.entries(SUPPORTED_SERVICES)){
+        function populateProviderOptions(selectElement) {
+            for (const [key, value] of Object.entries(SUPPORTED_SERVICES)) {
                 selectElement.add(new Option(value, key));
             }
         }
 
 
         providerSelects = document.getElementsByClassName('provider');
-        Array.from(providerSelects).forEach(function(item) {
+        Array.from(providerSelects).forEach(function (item) {
             populateProviderOptions(item);
         });
 
         function albumInputRowHtml(tableBody) {
             var albumrow = tableBody.insertRow(0)
 
+            var innertable = document.createElement('table')
+
+
             var inputCell = document.createElement('td')
             inputCell.innerHTML = "<input type=\"text\" placeholder=\"Enter Album URL\" class=\"url_input\" name=\"url_input\" size=60 oninput=\"populateRowForCard(this.parentElement.parentElement)\">"
             albumrow.appendChild(inputCell)
 
-            var cardFrontCell =  document.createElement('td')
+            var cardFrontCell = document.createElement('td')
             cardFrontCell.innerHTML = "<img class=\"cardfront\" style=\"max-width: 200px\"/>"
             albumrow.appendChild(cardFrontCell)
 
-            var cardBackCell =  document.createElement('td')
+            var cardBackCell = document.createElement('td')
             cardBackCell.innerHTML = "<img class=\"cardback\" style=\"max-width: 200px\"/>"
             albumrow.appendChild(cardBackCell)
 
-            var selectProviderCell =  document.createElement('td')
+            var selectProviderCell = document.createElement('td')
             var selectElement = document.createElement('select')
             selectElement.className = 'providerSelect'
-            for (const [key, value] of Object.entries(SUPPORTED_SERVICES)){
+            for (const [key, value] of Object.entries(SUPPORTED_SERVICES)) {
                 selectElement.add(new Option(value, key));
             }
             selectProviderCell.appendChild(selectElement)
             albumrow.appendChild(selectProviderCell)
 
-            var providersLitCell =  document.createElement('td')
+            var providersLitCell = document.createElement('td')
             providersLitCell.innerHTML = "<div class=\"providers\"><button type='button' onclick=\"populateRowForCard(this.parentElement.parentElement.parentElement);\">Generate</button></div>"
             albumrow.appendChild(providersLitCell)
 
-            var albumIdCell =  document.createElement('td')
+            var albumIdCell = document.createElement('td')
             albumIdCell.innerHTML = "<a class=\"album_id\"></a>"
             albumrow.appendChild(albumIdCell)
 
             var deleteRowCell = document.createElement('button')
             deleteRowCell.className = "delete_row"
             deleteRowCell.textContent = "Delete Card"
-            deleteRowCell.onclick = function() {
+            deleteRowCell.onclick = function () {
                 provider = selectElement.value
                 albumId = albumIdCell.querySelector(".album_id").text
                 this.parentElement.parentElement.removeChild(this.parentElement);
                 if (AlbumList[provider].includes(albumId)) {
-                        const albumList = AlbumList[provider]
-                        const newList = albumList.filter(function(value, index, arr){
-                            return value !== albumId
-                        })
-                        AlbumList[provider] = newList
-                        recalculateHash()
-                    }
+                    const albumList = AlbumList[provider]
+                    const newList = albumList.filter(function (value, index, arr) {
+                        return value !== albumId
+                    })
+                    AlbumList[provider] = newList
+                    recalculateHash()
+                }
                 recalculateHash();
             }
             deleteRowCell.disabled = true
@@ -362,7 +366,7 @@ async function goPDF() {
     <center>
         <a style="font-family:Yellowtail;font-size:36px">Music Cards</a>
         </br></br>
-        <a style="font-size:16px" >An open source Music experiment. Open source, because sharing is caring :) </a>
+        <a style="font-size:16px">An open source Music experiment. Open source, because sharing is caring :) </a>
     </center>
 </div>
 <center>
@@ -380,14 +384,19 @@ async function goPDF() {
     <table>
         <tbody>
         <tr>
-            <td>Card Width (in mm)</td><td><input type="number" id="cardWidth" value="71"></td>
+            <td>Card Width (in mm)</td>
+            <td><input type="number" id="cardWidth" value="71"></td>
         </tr>
         <tr>
-            <td>Card Height (in mm)</td><td><input type="number" id="cardHeight" value="100"></td>
+            <td>Card Height (in mm)</td>
+            <td><input type="number" id="cardHeight" value="100"></td>
         </tr>
         <tr>
-            <td><button type="checkbox" id="printCover"
-                        onclick="recalculateHash();window.location.reload(true);">Refresh</button></td>
+            <td>
+                <button type="checkbox" id="printCover"
+                        onclick="recalculateHash();window.location.reload(true);">Refresh
+                </button>
+            </td>
 
         </tr>
         </tbody>
@@ -395,16 +404,20 @@ async function goPDF() {
     <a>Album Count : </a><a id="albumCounter" style="font-weight: bold;">0</a><br><br>
 
     <table style="border-collapse: collapse;" border="1">
-    <tbody id="cardsTableBody">
-    </tbody>
+        <tbody id="cardsTableBody">
+        </tbody>
     </table>
-    <table><tbody>
+    <table>
+        <tbody>
         <tr>
-            <td><div id="coverCards">Cover Cards</div></td>
+            <td>
+                <div id="coverCards">Cover Cards</div>
+            </td>
             <td><img id="frontCover" class="cardfront" style="max-width: 200px"></td>
             <td><img id="backCover" class="cardback" style="max-width: 200px"></td>
         </tr>
-    </tbody></table>
+        </tbody>
+    </table>
     <script>
         loadAlbumsFromUrlHash();
         albumInputRowHtml(document.getElementById("cardsTableBody"));
@@ -413,53 +426,75 @@ async function goPDF() {
 
     <button id="generatePDF" onclick="goPDF()">Create Music Cards PDF</button>
 
-<br><br><br>
-<div id="footernotes">
-    <table><tbody>
-    <hr style="border-top: 1px solid #f0f0f5;" width="40%">
-        <tr><td>Accepts album URLs from following services:</td></tr>
-        <tr><td><div style="margin-left:15em;">
-            - spotify</br>
-            - itunes</br>
-            - appleMusic</br>
-            - youtube</br>
-            - youtubeMusic</br>
-            - google</br>
-            - googleStore</br>
-            - pandora</br>
-            - deezer</br>
-            - tidal</br>
-            - amazonStore</br>
-            - amazonMusic</br>
-            - soundcloud</br>
-            - napster</br>
-            - yandex</br>
-            - spinrilla</br>
-            - audius</br>
-        </div></td>
-        </tr>
-    </tbody></table>
-    <table>
-        <tbody>
-        <tr>
+    <br><br><br>
+    <div id="footernotes">
+        <table>
+            <tbody>
+            <hr style="border-top: 1px solid #f0f0f5;" width="40%">
+            <tr>
+                <td>Accepts album URLs from following services:</td>
+            </tr>
+            <tr>
+                <td>
+                    <div style="margin-left:15em;">
+                        - spotify</br>
+                        - itunes</br>
+                        - appleMusic</br>
+                        - youtube</br>
+                        - youtubeMusic</br>
+                        - google</br>
+                        - googleStore</br>
+                        - pandora</br>
+                        - deezer</br>
+                        - tidal</br>
+                        - amazonStore</br>
+                        - amazonMusic</br>
+                        - soundcloud</br>
+                        - napster</br>
+                        - yandex</br>
+                        - spinrilla</br>
+                        - audius</br>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <table>
+            <tbody>
+            <tr>
+                <td style="text-align:right;">
+                    Reach out :
+                </td>
+                <td>
+                    <a href="mailto:music-cards.org@pm.me">music-cards.org@pm.me</a> <em>(Feedback welcome, but please be kind)</em>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align:right;">
+                    Printing Ideas :
+                </td>
             <td>
-                Frontend:
+                <a href="https://curious-ape.notion.site/Music-Cards-Printing-Tips-ed26dbf78e244599824960302971d0a9"> link</a> <em>(Beware, contains opinions)</em>
             </td>
-            <td>
-                <a href="https://github.com/Munk1990/music-cards-website">Github/music-cards-website</a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Backend :
-            </td>
-            <td>
-                <a href="https://github.com/Munk1990/music-cards-lambda">Github/music-cards-lambda</a>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-</div>
+            <tr>
+                <td style="text-align:right;">
+                    Frontend :
+                </td>
+                <td>
+                    <a href="https://github.com/Munk1990/music-cards-website">Github/music-cards-website</a>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align:right;">
+                    Backend :
+                </td>
+                <td>
+                    <a href="https://github.com/Munk1990/music-cards-lambda">Github/music-cards-lambda</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </center>
 
 </body>
