@@ -3,60 +3,8 @@
 <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.9.0/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/downloadjs/1.4.8/download.min.js"></script>
+    <script src="resources/javascript/pdf-create.js"></script>
     <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Yellowtail"/>
-    <script>
-        // FULL DOCUMENTATION: https://pdf-lib.js.org/
-        const {PDFDocument, StandardFonts, rgb} = PDFLib;
-
-        async function goPDF() {
-            document.getElementById("generatePDF").innerText = "Processing PDF"
-            document.getElementById("generatePDF").disabled = true
-
-            cardFronts = document.getElementsByClassName("cardfront");
-            cardBacks = document.getElementsByClassName("cardback");
-
-            const pdfDoc = await PDFDocument.create()
-
-            for (let i = 0; i < cardFronts.length; i++) {
-                frontImageSrc = cardFronts[i].src
-                backImageSrc = cardBacks[i].src
-                if (frontImageSrc) {
-                    const frontImageBytes = await fetch(frontImageSrc).then((res) => res.arrayBuffer())
-                    const frontImage = await pdfDoc.embedJpg(frontImageBytes)
-                    const frontDims = frontImage.scale(1);
-                    const frontPage = pdfDoc.addPage();
-                    frontPage.setSize(frontDims.width, frontDims.height);
-                    frontPage.drawImage(frontImage, {
-                        x: 0,
-                        y: 0,
-                    })
-                    const backImageBytes = await fetch(backImageSrc).then((res) => res.arrayBuffer())
-                    const backImage = await pdfDoc.embedJpg(backImageBytes)
-                    const backDims = backImage.scale(1);
-                    const backPage = pdfDoc.addPage();
-                    backPage.setSize(backDims.width, backDims.height);
-                    backPage.drawImage(backImage, {
-                        x: 0,
-                        y: 0,
-                    })
-
-                }
-            }
-            const pdfBytes = await pdfDoc.save()
-            document.getElementById("generatePDF").innerText = "Generate PDF"
-            document.getElementById("generatePDF").disabled = false
-            let pdfName = ""
-            if (document.getElementById("listTitle").value) {
-                pdfName = "music-cards-1x" + document.getElementById("albumCounter").text + "-" + document.getElementById("cardWidth").value + "x" + document.getElementById("cardHeight").value + "mm"
-                    + "-(" + document.getElementById("listTitle").value + ").pdf"
-            } else {
-                pdfName = "music-cards-1x" + document.getElementById("albumCounter").text + "-" + document.getElementById("cardWidth").value + "x" + document.getElementById("cardHeight").value + "mm"
-                    + ".pdf"
-
-            }
-            download(pdfBytes, pdfName, "application/pdf");
-        }
-    </script>
     <script>
         const MUSIC_CARDS_ENDPOINT = "https://27p0a2mbdd.execute-api.us-east-1.amazonaws.com/Prod/";
         const CARD_API = "card";
@@ -425,8 +373,32 @@
         albumInputRowHtml(document.getElementById("cardsTableBody"));
         populateCover()
     </script>
+    <table>
+        <tbody>
+        <tr>
+            <td>Rows per page:</td>
+            <td><input type="number" id="pdfCol" value="4"></td>
+        </tr>
+        <tr>
+            <td>Colums per page:</td>
+            <td><input type="number" id="pdfRow" value="2"></td>
+        </tr>
+        </tbody>
+    </table>
+    <table>
+        <tbody>
+            <tr>
+                <td>
+                    <button id="generatePDF"
+                            onclick="createPdf(
+                            parseInt(document.getElementById('pdfCol').value),
+                            parseInt(document.getElementById('pdfRow').value))">
+                        Create Music Cards PDF</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 
-    <button id="generatePDF" onclick="goPDF()">Create Music Cards PDF</button>
 
     <br><br><br>
     <div id="footernotes">
